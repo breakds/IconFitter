@@ -38,3 +38,4 @@ if (BUILD_UNITTEST)
 endif (BUILD_UNITTEST)
 
 ADD_EXECUTABLE(template_match template_match.cc)
+ADD_EXECUTABLE(test test.cc)
