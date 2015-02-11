@@ -28,6 +28,30 @@ namespace icon_fitter {
       std::cout << '\n';
     }
 
+    template <typename VectorType>
+    inline void PrintVector(const VectorType &input) {
+      std::cout << "vector: ";
+      if (input.size() > 0) {
+        std::cout << '[' << input[0];
+        for (int i = 1; i < input.size(); ++i) {
+          std::cout << ", " << input[i];
+        }
+        std::cout << ']';
+      }
+      std::cout << '\n';
+    }
+
+    struct L2 {
+      template <typename VectorType>
+      static double Compute(const VectorType &a, const VectorType &b) {
+        double result = 0.0;
+        for (int i = 0; i < a.size(); ++i) {
+          double x = a[i] - b[i];
+          result += x * x;
+        }
+        return result;
+      }
+    };
     
     // ---------- Array-based Vector Operations ----------
     

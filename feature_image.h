@@ -84,8 +84,8 @@ namespace icon_fitter {
       return *(begin_ + parent_->offsets_[index]);
     }
 
-    inline int size() {
-      return parent_->dimension_;
+    inline int size() const {
+      return parent_->dimension;
     }
     
   private:
@@ -101,13 +101,21 @@ namespace icon_fitter {
 
     int block_size;
     int stride;
-    
+    int dimension;
+    int width;
+    int height;
+
     BlockFeatureImage(const FeatureImage<DataType> *image, 
                       int block_size_, 
                       int stride_) 
       : block_size(block_size_), stride(stride_), image_(image) {
-      dimension_ = block_size * block_size * image->depth;
-      offsets_.resize(dimension_);
+      dimension = block_size * block_size * image->depth;
+      height = image->height - (block_size - 1) * stride;
+      if (height < 0) height = 0;
+      width = image->width - (block_size - 1) * stride;
+      if (width < 0) width = 0;
+
+      offsets_.resize(dimension);
       int id = 0;
       for (int i = 0; i < block_size; ++i) {
         for (int j = 0; j < block_size; ++j) {
@@ -119,14 +127,16 @@ namespace icon_fitter {
       }
       
       // Create patches
-      patches_.reserve(image_->size());
-      for (int i = 0; i < image_->size(); ++i) {
-        patches_.emplace_back(this, image_->feature(i));
+      patches_.reserve(height * width);
+      for (int i = 0; i < height; ++i) {
+        for (int j = 0; j < width; ++j) {
+          patches_.emplace_back(this, image_->feature(i, j));
+        }
       }
     }
-
+    
     inline const Patch<DataType> &GetPatch(int i, int j) const {
-      return patches_[i * image_->width + j];
+      return patches_[i * width + j];
     }
 
     inline const Patch<DataType> &GetPatch(int id) const {
@@ -134,7 +144,6 @@ namespace icon_fitter {
     }
 
   private:
-    int dimension_;
     const FeatureImage<DataType> *image_;
     std::vector<int> offsets_;
     std::vector<Patch<DataType> > patches_;
