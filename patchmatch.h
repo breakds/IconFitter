@@ -31,6 +31,10 @@ namespace icon_fitter {
       return matrix_[i * width + j];
     }
 
+    const DataType &Get(int i, int j) const {
+      return matrix_[i * width + j];
+    }
+
     inline const std::vector<DataType> &data() {
       return matrix_;
     }

@@ -5,6 +5,7 @@
 #include "feature_image.h"
 #include "hog.h"
 #include "patchmatch.h"
+#include "visualization.h"
 
 using namespace icon_fitter;
 
@@ -34,19 +35,27 @@ int main(int argc, char **argv) {
 
   mean.y /= target.height * target.width;
   mean.x /= target.height * target.width;
+
+  // Debug Visualization
+  {
+    TransformViewer(argv[2], argv[1], &result, 12);
+    cv::waitKey(0);
+  }
   
   // Visualization match result
   {
-    cv::Mat input = cv::imread(argv[2]);
-    cv::Mat icon = cv::imread(argv[1]);
-    rectangle(input, 
-              {mean.x, mean.y}, 
-              {mean.x + icon.cols, mean.y + icon.rows}, 
-              {0, 0, 255});
-    cv::imshow("input", input);
-    cv::imshow("icon", icon);
-    cv::waitKey(0);
+    // cv::Mat input = cv::imread(argv[2]);
+    // cv::Mat icon = cv::imread(argv[1]);
+    // rectangle(input, 
+    //           {mean.x, mean.y}, 
+    //           {mean.x + icon.cols, mean.y + icon.rows}, 
+    //           {0, 0, 255});
+    // cv::imshow("input", input);
+    // cv::imshow("icon", icon);
+    // cv::waitKey(0);
   }
+
+
 
   return 0;
 }
