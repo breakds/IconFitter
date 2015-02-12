@@ -16,14 +16,17 @@ int main(int argc, char **argv) {
   
   // template
   FeatureImage<float> template_image = HogGen::Create(argv[1], {6, 9, false});
-  BlockFeatureImage<float> target(&template_image, 2, 6);
+  BlockFeatureImage<float> target(&template_image, 3, 6);
 
   // input
   FeatureImage<float> input_image = HogGen::Create(argv[2], {6, 9, false});
-  BlockFeatureImage<float> source(&input_image, 2, 6);
+  BlockFeatureImage<float> source(&input_image, 3, 6);
 
   // PatchMatch
   PatchMatchOptions options;
+  options.iterations = 10;
+  options.decay_rate = 0.5;
+  options.initial_candidates = 20;
   TransformMap result = PatchMatch(source, target, options);
 
   // Mean of Transform Map
@@ -36,26 +39,24 @@ int main(int argc, char **argv) {
   mean.y /= target.height * target.width;
   mean.x /= target.height * target.width;
 
-  // Debug Visualization
-  {
-    TransformViewer(argv[2], argv[1], &result, 12);
-    cv::waitKey(0);
-  }
-  
   // Visualization match result
   {
-    // cv::Mat input = cv::imread(argv[2]);
-    // cv::Mat icon = cv::imread(argv[1]);
-    // rectangle(input, 
-    //           {mean.x, mean.y}, 
-    //           {mean.x + icon.cols, mean.y + icon.rows}, 
-    //           {0, 0, 255});
-    // cv::imshow("input", input);
-    // cv::imshow("icon", icon);
-    // cv::waitKey(0);
+    cv::Mat input = cv::imread(argv[2]);
+    cv::Mat icon = cv::imread(argv[1]);
+    rectangle(input, 
+              {mean.x, mean.y}, 
+              {mean.x + icon.cols, mean.y + icon.rows}, 
+              {0, 0, 255});
+    cv::imshow("input", input);
   }
 
 
+  // Debug Visualization
+  {
+    TransformViewer(argv[2], argv[1], &result, 18);
+  }
+  
+  cv::waitKey(0);
 
   return 0;
 }

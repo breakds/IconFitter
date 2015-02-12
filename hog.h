@@ -37,7 +37,12 @@ namespace icon_fitter {
       if (is_signed) {
         position = fabs(atan2(y, x) + M_PI);
       } else {
-        position = fabs(atan2(y, x));
+        double angle = atan2(y, x);
+        if (angle < 0.0) {
+          position = fabs(angle + M_PI);
+        } else {
+          position = angle;
+        }
       }
       return std::make_pair(static_cast<int>(position / bin_size),
                             Magnitude(y, x));

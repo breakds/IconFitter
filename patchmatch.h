@@ -90,11 +90,28 @@ namespace icon_fitter {
         return 0 <= y && y < height && 0 <= x && x < width;
       }
     };
+
+    template <typename DataType, typename Distance>
+    double GetEnergy(const BlockFeatureImage<DataType> &source, 
+                     const BlockFeatureImage<DataType> &target,
+                     const TransformMap &map) {
+      double energy = 0.0;
+      for (int i = 0; i < target.height; ++i) {
+        for (int j = 0; j < target.width; ++j) {
+          const Transform &delta = map.Get(i, j);
+          int y = i + delta.y;
+          int x = j + delta.x;
+          energy += Distance::Compute(target.GetPatch(i, j),
+                                      source.GetPatch(y, x));
+        }
+      }
+      return energy;
+    }
   }  // namespace
 
   template <typename DataType, typename Distance = algebra::L2>
-  TransformMap PatchMatch(BlockFeatureImage<DataType> &source, 
-                          BlockFeatureImage<DataType> &target,
+  TransformMap PatchMatch(const BlockFeatureImage<DataType> &source, 
+                          const BlockFeatureImage<DataType> &target,
                           PatchMatchOptions options) {
 
     if (source.dimension != target.dimension) {
@@ -130,8 +147,10 @@ namespace icon_fitter {
         }
       }
     }
+    printf("Initial Energy: %.6lf\n", 
+           GetEnergy<DataType, Distance>(source, target, result));
 
-
+    
     // Iteration Preparation
     PatchMatchControl control(target.height, target.width);
     std::uniform_real_distribution<double> r_random;
@@ -179,14 +198,14 @@ namespace icon_fitter {
           Transform new_transform;
           for (int k = 0; k < 2; ++k) {
             if (0 == k) {
-              int new_i = i + control.y_delta;
+              int new_i = i - control.y_delta;
               if (0 <= new_i && new_i < target.height) {
                 new_transform = result(new_i, j);
               } else {
                 continue;
               }
             } else {
-              int new_j = j + control.x_delta;
+              int new_j = j - control.x_delta;
               if (0 <= new_j && new_j < target.width) {
                 new_transform = result(i, new_j);
               } else {
@@ -205,16 +224,17 @@ namespace icon_fitter {
               }
             }
           }
-
           if (updated) updates++;
         }  // for i
       }  // for j
-      
+      printf("Round %d Energy: %.6lf\n", round,
+             GetEnergy<DataType, Distance>(source, target, result));
       if (updates < static_cast<int>(target.height * target.width *
                                      options.termination_update_rate)) {
+        printf("Early termination.\n");
         break;
       }
-
+      
       control.Switch();
       
     }  // for round
